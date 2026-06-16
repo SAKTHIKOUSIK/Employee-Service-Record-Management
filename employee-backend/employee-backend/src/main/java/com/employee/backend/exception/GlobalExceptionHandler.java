@@ -1,0 +1,55 @@
+package com.employee.backend.exception;
+
+import com.employee.backend.dto.ApiResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(EmployeeNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleEmployeeNotFound(EmployeeNotFoundException ex) {
+        ApiResponse<Void> response = new ApiResponse<>(ex.getMessage(), null);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(DuplicateEmployeeCodeException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDuplicateEmployeeCode(DuplicateEmployeeCodeException ex) {
+        ApiResponse<Void> response = new ApiResponse<>(ex.getMessage(), null);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Void>> handleValidationErrors(MethodArgumentNotValidException ex) {
+
+        StringBuilder sb = new StringBuilder("Validation failed: ");
+        for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
+            sb.append(fieldError.getField())
+                    .append(" - ")
+                    .append(fieldError.getDefaultMessage())
+                    .append("; ");
+        }
+
+        ApiResponse<Void> response = new ApiResponse<>(sb.toString(), null);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Void>> handleGenericException(Exception ex) {
+
+        ApiResponse<Void> response = new ApiResponse<>("Unexpected error: " + ex.getMessage(), null);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
+    
+    @ExceptionHandler(InvalidFileException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInvalidFile(InvalidFileException ex) {
+        ApiResponse<Void> response = new ApiResponse<>(ex.getMessage(), null);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+    
+    
+}

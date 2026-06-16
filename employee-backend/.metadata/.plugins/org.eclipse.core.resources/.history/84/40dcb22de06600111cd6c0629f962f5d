@@ -1,0 +1,130 @@
+package com.employee.backend.service;
+
+import com.employee.backend.entity.Employee;
+import com.employee.backend.exception.EmployeeNotFoundException;
+import com.employee.backend.repository.EmployeeRepository;
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Font;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.pdf.BaseFont;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Service;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+@Service
+public class EmployeeReportService {
+
+    private final EmployeeRepository employeeRepository;
+
+    public EmployeeReportService(EmployeeRepository employeeRepository) {
+        this.employeeRepository = employeeRepository;
+    }
+
+    public byte[] generateEmployeeReport(Long id) {
+
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with id: " + id));
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+
+            Document document = new Document(PageSize.A4);
+            PdfWriter.getInstance(document, baos);
+            document.open();
+
+            // English font
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
+
+            // Tamil font – load from classpath
+//            Font tamilFont = createTamilFont(16);
+            
+            Font tamilFont = createTamilFont(16);
+            Font tamilNormalFont = createTamilFont(12);
+
+            // Titles
+            document.add(new Paragraph("Employee Service Record Report", titleFont));
+            document.add(new Paragraph(" ", normalFont)); // empty line
+
+//            document.add(new Paragraph("பணியாளர் சேவை விவர அறிக்கை", tamilFont));
+//            document.add(new Paragraph(" ", normalFont)); // empty line
+            
+            document.add(new Paragraph("பணியாளர் சேவை விவர அறிக்கை", tamilFont));
+            
+
+            // Table with fields
+            PdfPTable table = new PdfPTable(2);
+            table.setWidthPercentage(100);
+
+            addRow(table, "Employee Code", employee.getEmployeeCode(), normalFont);
+            addRow(table, "Employee Name (English)", employee.getEmployeeNameEnglish(), normalFont);
+            addRow(table, "Employee Name (Tamil)", employee.getEmployeeNameTamil(), tamilFont);
+            addRow(table, "Employee Name (Tamil)", employee.getEmployeeNameTamil(), tamilNormalFont);
+            addRow(table, "Designation", employee.getDesignation(), normalFont);
+            addRow(table, "Department", employee.getDepartment(), normalFont);
+            addRow(table, "Date of Joining", employee.getDateOfJoining() != null ? employee.getDateOfJoining().toString() : "", normalFont);
+            addRow(table, "Mobile Number", employee.getMobileNumber(), normalFont);
+            addRow(table, "Email", employee.getEmail(), normalFont);
+            addRow(table, "Remarks", employee.getRemarks(), normalFont);
+
+            document.add(table);
+            document.close();
+
+            return baos.toByteArray();
+        } catch (DocumentException | IOException ex) {
+            throw new RuntimeException("Failed to generate employee report PDF", ex);
+        }
+    }
+
+//    private Font createTamilFont(float size) throws IOException, DocumentException {
+//
+//        ClassPathResource fontResource = new ClassPathResource("fonts/NotoSansTamil-Regular.ttf");
+//        try (InputStream inputStream = fontResource.getInputStream()) {
+//            byte[] fontBytes = inputStream.readAllBytes();
+//            BaseFont baseFont = BaseFont.createFont(
+//                    "NotoSansTamil-Regular.ttf",
+//                    BaseFont.IDENTITY_H,
+//                    BaseFont.EMBEDDED,
+//                    true,
+//                    fontBytes,
+//                    null
+//            );
+//            return new Font(baseFont, size);
+//        }
+//    }
+    
+    private Font createTamilFont(float size) throws IOException, DocumentException {
+
+        ClassPathResource fontResource = new ClassPathResource("fonts/NotoSansTamil-Regular.ttf");
+        try (InputStream inputStream = fontResource.getInputStream()) {
+            byte[] fontBytes = inputStream.readAllBytes();
+            BaseFont baseFont = BaseFont.createFont(
+                    "Latha",
+                    BaseFont.IDENTITY_H,
+                    BaseFont.EMBEDDED,
+                    true,
+                    fontBytes,
+                    null
+            );
+            return new Font(baseFont, size);
+        }
+    }
+
+    private void addRow(PdfPTable table, String label, String value, Font font) {
+
+        PdfPCell cell1 = new PdfPCell(new Paragraph(label, font));
+        PdfPCell cell2 = new PdfPCell(new Paragraph(value != null ? value : "", font));
+
+        table.addCell(cell1);
+        table.addCell(cell2);
+    }
+    
+}

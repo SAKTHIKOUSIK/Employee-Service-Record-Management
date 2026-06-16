@@ -1,0 +1,184 @@
+package com.employee.backend.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(
+        name = "employees",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "employee_code")
+        }
+)
+public class Employee {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "employee_code", nullable = false, unique = true, length = 50)
+    private String employeeCode;
+
+    @Column(name = "employee_name_english", nullable = false, length = 200)
+    private String employeeNameEnglish;
+
+    @Column(name = "employee_name_tamil", nullable = false, length = 200)
+    private String employeeNameTamil;
+
+    @Column(name = "designation", nullable = false, length = 100)
+    private String designation;
+
+    @Column(name = "department", nullable = false, length = 100)
+    private String department;
+
+    @Column(name = "date_of_joining", nullable = false)
+    private LocalDate dateOfJoining;
+
+    @Column(name = "mobile_number", length = 20)
+    private String mobileNumber;
+
+    @Column(name = "email", length = 200)
+    private String email;
+
+    @Column(name = "remarks", length = 1000)
+    private String remarks;
+
+    // Path on disk for appointment order PDF
+    @Column(name = "appointment_order_path", length = 500)
+    private String appointmentOrderPath;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+    
+    @Column(name = "appointment_order_file_name", length = 255)
+    private String appointmentOrderFileName;
+
+    // Constructors
+    public Employee() {
+    }
+
+    // Getters and setters
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getEmployeeCode() {
+        return employeeCode;
+    }
+
+    public void setEmployeeCode(String employeeCode) {
+        this.employeeCode = employeeCode;
+    }
+
+    public String getEmployeeNameEnglish() {
+        return employeeNameEnglish;
+    }
+
+    public void setEmployeeNameEnglish(String employeeNameEnglish) {
+        this.employeeNameEnglish = employeeNameEnglish;
+    }
+
+    public String getEmployeeNameTamil() {
+        return employeeNameTamil;
+    }
+
+    public void setEmployeeNameTamil(String employeeNameTamil) {
+        this.employeeNameTamil = employeeNameTamil;
+    }
+
+    public String getDesignation() {
+        return designation;
+    }
+
+    public void setDesignation(String designation) {
+        this.designation = designation;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public LocalDate getDateOfJoining() {
+        return dateOfJoining;
+    }
+
+    public void setDateOfJoining(LocalDate dateOfJoining) {
+        this.dateOfJoining = dateOfJoining;
+    }
+
+    public String getMobileNumber() {
+        return mobileNumber;
+    }
+
+    public void setMobileNumber(String mobileNumber) {
+        this.mobileNumber = mobileNumber;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getRemarks() {
+        return remarks;
+    }
+
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
+    }
+
+    public String getAppointmentOrderPath() {
+        return appointmentOrderPath;
+    }
+
+    public void setAppointmentOrderPath(String appointmentOrderPath) {
+        this.appointmentOrderPath = appointmentOrderPath;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+    
+    public String getAppointmentOrderFileName() {
+        return appointmentOrderFileName;
+    }
+
+    public void setAppointmentOrderFileName(String appointmentOrderFileName) {
+        this.appointmentOrderFileName = appointmentOrderFileName;
+    }
+    
+}

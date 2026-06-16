@@ -1,0 +1,80 @@
+package com.employee.backend.controller;
+
+import com.employee.backend.dto.ApiResponse;
+import com.employee.backend.dto.EmployeeRequestDTO;
+import com.employee.backend.dto.EmployeeResponseDTO;
+import com.employee.backend.service.EmployeeService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+
+import com.employee.backend.exception.InvalidFileException;
+import com.employee.backend.service.FileStorageService;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+
+@RestController
+@RequestMapping("/api/employees")
+@CrossOrigin(origins = "*")
+public class EmployeeController {
+
+	private final EmployeeService employeeService;
+    private final FileStorageService fileStorageService;
+
+    public EmployeeController(EmployeeService employeeService,
+                              FileStorageService fileStorageService) {
+        this.employeeService = employeeService;
+        this.fileStorageService = fileStorageService;
+    }
+
+    // POST /api/employees/create
+    @PostMapping("/create")
+    public ResponseEntity<ApiResponse<EmployeeResponseDTO>> createEmployee(
+            @Valid @RequestBody EmployeeRequestDTO requestDTO) {
+
+        EmployeeResponseDTO created = employeeService.createEmployee(requestDTO);
+        ApiResponse<EmployeeResponseDTO> response =
+                new ApiResponse<>("Employee created successfully", created);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    // GET /api/employees/list
+    @GetMapping("/list")
+    public ResponseEntity<ApiResponse<List<EmployeeResponseDTO>>> getAllEmployees() {
+
+        List<EmployeeResponseDTO> employees = employeeService.getAllEmployees();
+        ApiResponse<List<EmployeeResponseDTO>> response =
+                new ApiResponse<>("Employee list fetched successfully", employees);
+
+        return ResponseEntity.ok(response);
+    }
+
+    // GET /api/employees/{id}
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<EmployeeResponseDTO>> getEmployeeById(@PathVariable Long id) {
+
+        EmployeeResponseDTO employee = employeeService.getEmployeeById(id);
+        ApiResponse<EmployeeResponseDTO> response =
+                new ApiResponse<>("Employee fetched successfully", employee);
+
+        return ResponseEntity.ok(response);
+    }
+
+    // PUT /api/employees/update/{id}
+    @PutMapping("/update/{id}")
+    public ResponseEntity<ApiResponse<EmployeeResponseDTO>> updateEmployee(
+            @PathVariable Long id,
+            @Valid @RequestBody EmployeeRequestDTO requestDTO) {
+
+        EmployeeResponseDTO updated = employeeService.updateEmployee(id, requestDTO);
+        ApiResponse<EmployeeResponseDTO> response =
+                new ApiResponse<>("Employee updated successfully", updated);
+
+        return ResponseEntity.ok(response);
+    }
+}

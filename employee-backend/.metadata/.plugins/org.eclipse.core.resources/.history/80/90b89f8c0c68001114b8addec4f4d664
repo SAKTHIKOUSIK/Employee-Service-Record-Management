@@ -1,0 +1,132 @@
+package com.employee.backend.service.impl;
+
+import com.employee.backend.dto.EmployeeRequestDTO;
+import com.employee.backend.dto.EmployeeResponseDTO;
+import com.employee.backend.entity.Employee;
+import com.employee.backend.exception.DuplicateEmployeeCodeException;
+import com.employee.backend.exception.EmployeeNotFoundException;
+import com.employee.backend.repository.EmployeeRepository;
+import com.employee.backend.service.EmployeeService;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@Transactional
+public class EmployeeServiceImpl implements EmployeeService {
+
+    private final EmployeeRepository employeeRepository;
+
+    public EmployeeServiceImpl(EmployeeRepository employeeRepository) {
+        this.employeeRepository = employeeRepository;
+    }
+
+    @Override
+    public EmployeeResponseDTO createEmployee(EmployeeRequestDTO requestDTO) {
+
+        if (employeeRepository.existsByEmployeeCode(requestDTO.getEmployeeCode())) {
+            throw new DuplicateEmployeeCodeException("Employee code already exists: " + requestDTO.getEmployeeCode());
+        }
+
+        Employee employee = new Employee();
+        mapRequestToEntity(requestDTO, employee);
+
+        LocalDateTime now = LocalDateTime.now();
+        employee.setCreatedAt(now);
+        employee.setUpdatedAt(now);
+
+        Employee saved = employeeRepository.save(employee);
+        return mapEntityToResponse(saved);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<EmployeeResponseDTO> getAllEmployees() {
+        return employeeRepository.findAll()
+                .stream()
+                .map(this::mapEntityToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public EmployeeResponseDTO getEmployeeById(Long id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with id: " + id));
+        return mapEntityToResponse(employee);
+    }
+
+    @Override
+    public EmployeeResponseDTO updateEmployee(Long id, EmployeeRequestDTO requestDTO) {
+
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with id: " + id));
+
+        // If employee code is changed, ensure uniqueness
+        if (!employee.getEmployeeCode().equals(requestDTO.getEmployeeCode())
+                && employeeRepository.existsByEmployeeCode(requestDTO.getEmployeeCode())) {
+            throw new DuplicateEmployeeCodeException("Employee code already exists: " + requestDTO.getEmployeeCode());
+        }
+
+        mapRequestToEntity(requestDTO, employee);
+        employee.setUpdatedAt(LocalDateTime.now());
+
+        Employee updated = employeeRepository.save(employee);
+        return mapEntityToResponse(updated);
+    }
+    
+    
+    
+    
+    
+    
+    @Override
+    public EmployeeResponseDTO updateAppointmentOrderPath(Long id, String filePath) {
+
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with id: " + id));
+
+        employee.setAppointmentOrderPath(filePath);
+        employee.setUpdatedAt(LocalDateTime.now());
+
+        Employee updated = employeeRepository.save(employee);
+        return mapEntityToResponse(updated);
+    }
+    
+    
+
+    private void mapRequestToEntity(EmployeeRequestDTO requestDTO, Employee employee) {
+        employee.setEmployeeCode(requestDTO.getEmployeeCode());
+        employee.setEmployeeNameEnglish(requestDTO.getEmployeeNameEnglish());
+        employee.setEmployeeNameTamil(requestDTO.getEmployeeNameTamil());
+        employee.setDesignation(requestDTO.getDesignation());
+        employee.setDepartment(requestDTO.getDepartment());
+        employee.setDateOfJoining(requestDTO.getDateOfJoining());
+        employee.setMobileNumber(requestDTO.getMobileNumber());
+        employee.setEmail(requestDTO.getEmail());
+        employee.setRemarks(requestDTO.getRemarks());
+        // appointmentOrderPath is handled separately by upload logic
+    }
+
+    private EmployeeResponseDTO mapEntityToResponse(Employee employee) {
+        EmployeeResponseDTO dto = new EmployeeResponseDTO();
+        dto.setId(employee.getId());
+        dto.setEmployeeCode(employee.getEmployeeCode());
+        dto.setEmployeeNameEnglish(employee.getEmployeeNameEnglish());
+        dto.setEmployeeNameTamil(employee.getEmployeeNameTamil());
+        dto.setDesignation(employee.getDesignation());
+        dto.setDepartment(employee.getDepartment());
+        dto.setDateOfJoining(employee.getDateOfJoining());
+        dto.setMobileNumber(employee.getMobileNumber());
+        dto.setEmail(employee.getEmail());
+        dto.setRemarks(employee.getRemarks());
+        dto.setAppointmentOrderPath(employee.getAppointmentOrderPath());
+        dto.setCreatedAt(employee.getCreatedAt());
+        dto.setUpdatedAt(employee.getUpdatedAt());
+        dto.setAppointmentOrderFileName(employee.getAppointmentOrderFileName());
+        return dto;
+    }
+}
